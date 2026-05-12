@@ -1,0 +1,23 @@
+# MATLAB
+*.asv
+*.mex*
+slprj/
+octave-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# LaTeX (for when you add your Overleaf files)
+*.aux
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.out
+*.toc
+*.lof
+*.lot
