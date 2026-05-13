@@ -1,0 +1,74 @@
+\documentclass[tikz,border=4pt]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{siunitx}
+\usetikzlibrary{positioning,calc} % <-- calc for midpoint math
+
+% ---------- Map bounds ----------
+\def\xmin{-120}
+\def\xmax{-114}
+\def\ymin{32}
+\def\ymax{36}
+
+% ---------- Your three points (names + lat/lon) ----------
+\def\Aname{Palomar}\def\Alat{33.3564}\def\Alon{-116.8650}
+\def\Bname{Table Mountain}\def\Blat{34.3820}\def\Blon{-117.6818}
+\def\Cname{Goldstone}\def\Clat{35.4267}\def\Clon{-116.8900}
+
+% Precomputed pairwise distances (km)
+\pgfmathsetmacro{\dAB}{125.85}
+\pgfmathsetmacro{\dBC}{136.75}
+\pgfmathsetmacro{\dCA}{210.35}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+  width=14cm, height=10cm,
+  xmin=\xmin, xmax=\xmax, ymin=\ymin, ymax=\ymax,
+  , axis equal image,
+  xlabel={Longitude (°)}, ylabel={Latitude (°)},
+  grid=both,
+  tick style={black!50}, tick label style={black!70},
+  set layers=standard,
+]
+
+% Optional background map
+\IfFileExists{wms.jpg}{%
+  \addplot graphics[
+    xmin=\xmin, xmax=\xmax, ymin=\ymin, ymax=\ymax
+  ] {wms.jpg};
+}{}
+
+% --- Define axis coordinates for easy reuse ---
+\path (axis cs:\Alon,\Alat) coordinate (A)
+      (axis cs:\Blon,\Blat) coordinate (B)
+      (axis cs:\Clon,\Clat) coordinate (C);
+
+% --- Points (blue) ---
+\addplot+[only marks, mark=*, mark size=2.5pt, blue]
+  coordinates {(\Alon,\Alat) (\Blon,\Blat) (\Clon,\Clat)};
+
+% --- Point labels (on top of grid) ---
+\node[on layer=axis foreground, anchor=south , text=blue]     at (A) {\Aname};
+\node[on layer=axis foreground, anchor=south east, text=blue] at (B) {\Bname};
+\node[on layer=axis foreground, anchor=south west, text=blue] at (C) {\Cname};
+
+% --- Dashed connections ---
+\draw[blue, dashed, thick, on layer=axis foreground] (A) -- (B);
+\draw[blue, dashed, thick, on layer=axis foreground] (B) -- (C);
+\draw[blue, dashed, thick, on layer=axis foreground] (C) -- (A);
+
+% --- Distance labels: next to (not along), above the grid ---
+\node[on layer=axis foreground, fill=white, fill opacity=0.7,
+      text opacity=1, inner sep=1pt, above=5pt] at ($ (A)!0.5!(B) $)
+      {\SI[round-mode=places,round-precision=1]{\dAB}{km}};
+\node[on layer=axis foreground, fill=white, fill opacity=0.7,
+      text opacity=1, inner sep=1pt, above=5pt] at ($ (B)!0.5!(C) $)
+      {\SI[round-mode=places,round-precision=1]{\dBC}{km}};
+\node[on layer=axis foreground, fill=white, fill opacity=0.7,
+      text opacity=1, inner sep=1pt, above=5pt] at ($ (C)!0.5!(A) $)
+      {\SI[round-mode=places,round-precision=1]{\dCA}{km}};
+
+\end{axis}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,24 @@
+\begin{tikzpicture}[
+  line cap=round, line join=round, >=Stealth, thick,
+  every node/.style={font=\normalsize},   % nodes match document font size
+  every label/.style={font=\normalsize}   % labels match document font size
+]
+  %--- nodes
+  \tikzset{dot/.style={circle,fill,inner sep=3pt}}
+  \node[dot, label=below:$0$] (0) at (0,0) {};
+  \node[dot, label=above left:$1$]      (1) at (-2.2,2.2) {};
+  \node[dot, label=above :$2$](2) at (0,2.8) {};
+  \node[dot, label=above right:$3$](3) at (2.2,2.2) {};
+
+  %--- curved arrows with labels
+  \draw[->] (0) to[bend left=10]  node[below left]  {$\tau_{01}$} (1);
+  \draw[->] (0) to[bend left=30]  node[near start,right] {$\tau_{02}$} (2);
+  \draw[->] (0) to[bend right=10] node[below right] {$\tau_{03}$} (3);
+
+  \draw[->, dashed, draw=blue] (1) to[bend left=50, bend pos=0.3]  node[above]  {$\tau_{12}$} (2);
+  \draw[->, dashed, draw=blue] (1) to[bend right=15]  node[near end, above] {$\tau_{13}$} (3);
+
+  \draw[->, dashed, draw=blue] (2) to[bend left=50, bend pos=0.8] node[above] {$\tau_{23}$} (3);
+
+
+\end{tikzpicture}

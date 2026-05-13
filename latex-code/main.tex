@@ -1,0 +1,60 @@
+\documentclass{jplreport}
+\setlength{\headheight}{14pt}
+
+\title{Time Difference of Arrival for Telescope Arrays}
+\author{Federico Ajmone Marsan}
+\date{October 21, 2025}
+
+\pgfplotsset{compat=1.18}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{-1cm}
+\includegraphics[height=4.0cm]{lastfigs/JPL_RedBlackBIG.pdf}\par
+
+\vspace{0.5cm}
+{\Large \textbf{Final Internship Report}}\par
+
+\vspace{0.5cm}
+\HRule\\[0.35cm]
+{\huge \bfseries Time Difference of Arrival for Optical Telescope Arrays\par}
+\HRule
+
+\vspace{0.5cm}
+\includegraphics[width=\linewidth,height=0.4\textheight]{lastfigs/ChatGPT.pdf}\par
+
+\vspace{0.8cm}
+{\Large \textbf{Federico Ajmone Marsan}}\\[2pt]
+\href{fede.mails@icloud.com}{fede.mails@icloud.com}\\[0.8cm]
+{\today}
+  
+\vspace{0.8cm}
+\begin{tabular}{@{}ll@{}}
+\textbf{Supervisors:}  & Dr.\ Ryan Rogalin \\
+                       & Dr.\ William Jun \\
+\end{tabular}
+
+\vfill
+
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic}
+
+\input{source-chapters/1-0Source-Localization}
+\input{source-chapters/1-1model}
+\input{source-chapters/2-0Single-Pulse-Delay-Estimation}
+\input{source-chapters/2-1Repeated_Delay_continous}
+\input{source-chapters/2-2Known PPM_known}
+\input{source-chapters/3-0ccSequence}
+\input{source-chapters/4-0conclusionsand}
+
+
+\clearpage
+
+\bibliographystyle{IEEEtran}
+\bibliography{bib/article,bib/book,bib/wiki}
+
+\end{document}

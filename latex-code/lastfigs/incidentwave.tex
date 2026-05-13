@@ -1,0 +1,68 @@
+\documentclass[tikz, border=3mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{calc, positioning, quotes, angles}
+
+\begin{document}
+\begin{tikzpicture}[>=stealth, scale=1.5]
+
+% --- Definitions ---
+% We define two different angles to match the drawing:
+% 1. \theta: The angle shown for the solid lines.
+% 2. \waveangle: The angle for the dashed lines (wavefronts).
+\def\theta{35}      % Angle \theta as SHOWN (from vertical)
+\def\waveangle{55} % Angle for DASHED lines (from vertical)
+\def\d{3}          % Distance d
+
+% --- Coordinates ---
+\coordinate (r1) at (0, 0);
+\coordinate (r0) at (0, \d);
+\coordinate (P) at (7, 5); % Point P
+
+% --- Z-Axis ---
+\draw [->, thick] (0, -1) -- (0, \d+2) node[above] {$z$};
+\fill (r0) circle (2pt) node [left=2pt] {$r_0$};
+\fill (r1) circle (2pt) node [left=2pt] {$r_1$};
+
+% --- Distance d ---
+\draw [<->, red, thick] (r0) -- (r1) node [midway, left=2pt] {$d$};
+
+% --- Solid Lines & Angle \theta ---
+% These are the two solid lines.
+\draw [thick] (r0) -- ++(90-\theta:9) coordinate (solid0);
+\draw [thick] (r1) -- ++(90-\theta:9);
+% Draw the angle \theta relative to the solid line, as in the image.
+\coordinate (z_ref) at (0, \d+1.5); % Reference point on z-axis
+\pic [draw, angle_radius=1cm, "$\theta$"] {angle = z_ref--r0--solid0};
+
+% --- Dashed Lines (Wavefronts) ---
+\def\tika{90-\waveangle} % Ti*k*Z angle for dashed lines
+\def\tikp{-\waveangle}   % Ti*k*Z angle for perpendicular
+% Draw the reference dashed line passing through r0
+\draw [dashed] (r0) -- ++(\tika:8) coordinate (wave0); 
+% Draw parallel dashed lines
+\foreach \i in {1, 2, 3} {
+    \draw [dashed] ($(r0)+(\tikp:\i*0.6)$) -- ++(\tika:9);
+}
+\foreach \i in {1} {
+    \draw [dashed] ($(r0)+(\tikp:-\i*0.6)$) -- ++(\tika:9);
+}
+
+% --- Kappa Vector ---
+% Positioned relative to the diagram, perpendicular to dashed lines.
+\coordinate (kappa_start) at (3, 2);
+\draw [->, red, thick] (kappa_start) -- ++(180+\tikp:1.5) node [midway, right=2pt] {$\kappa$};
+
+% --- Path Difference ---
+% Project r1 onto the reference dashed line (wave0).
+\coordinate (p) at ($(r0)!(r1)!(wave0)$);
+% Draw the blue line and label it "d cos(theta)" as in the image,
+% even though its geometric length is d*cos(\waveangle).
+\draw [->, blue, thick] (r1) -- (p) node [midway, below left, xshift=-2pt] {$d \cos \theta$};
+
+% --- Point P ---
+\fill (P) circle (2pt) node [right=2pt] {$P$};
+\draw [dashed] (P) circle (0.5);
+\draw [dashed] (P) circle (0.8);
+
+\end{tikzpicture}
+\end{document}

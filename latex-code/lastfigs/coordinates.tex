@@ -1,0 +1,20 @@
+% Styles
+\tikzset{>=latex}
+
+% Spherical Coordinates
+\tdplotsetmaincoords{45}{90}
+\begin{tikzpicture}[scale=3, tdplot_main_coords]
+    \coordinate (O) at (0,0,0);
+    \draw[thick,->] (0,0,0) -- (0,-0.5,-0.5) node[anchor=north east]{$x$};
+    \draw[thick,->] (0,0,0) -- (0,1,0) node[anchor=west]{$y$};
+    \draw[thick,->] (0,0,0) -- (0,0,1.2) node[anchor=south]{$z$};
+    \tdplotsetcoord{P}{1}{40}{60}
+    \draw plot [mark=*, mark size=0.7] (P) node [right] {Source $[\rho,\phi,\theta]^\mathsf{T}$};
+    \draw[->, thick] (O) -- (P) ;
+    \draw[dashed, color=black] (O) -- (Pxy);
+    \draw[dashed, color=black] (P) -- (Pxy);
+    \tdplotdrawarc{(O)}{0.3}{-45}{60}{anchor=north}{$\phi$}
+    \tdplotsetthetaplanecoords{60}
+    \tdplotdrawarc[tdplot_rotated_coords]{(0,0,0)}{0.4}{0}%
+        {40}{anchor=south}{$\theta$}
+\end{tikzpicture}

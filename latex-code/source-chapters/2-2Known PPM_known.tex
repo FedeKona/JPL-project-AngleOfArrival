@@ -1,0 +1,56 @@
+\section{Known PPM Sequence Delay MLE}
+\label{sec:Known-PPM-sequence-Delay-Estimation}
+
+In this section, we finally look at the problem when the transmitted signal \(t\mapsto s(t)\) is a known PPM signal with inter-symbol guard times (ISGTs). We assume that every symbol is composed by \(n\) slots, where messages of length \(\log_2n\) are encoded, followed by \(P\) slots not containing any signal pulses. The length of a slot is then \(T_s=T_{\text{symbol}}/(n+P)\). As in~\Cref{sec:Repeated-Pulse-Delay-Estimation} we assume to be looking at a total of \(M\) symbols. As in~\eqref{eq:aparently} we have:
+\begin{equation}
+y_r[k]=\sum_{m=0}^{M-1}x_r[k+mQ] \quad k\in\{0,\ldots,Q-1\}.
+\label{eq:aparently2}
+\end{equation}
+where \(Q=n+P\).
+
+\noindent
+If we assume the signal slots to be deterministically uniform (i.e. the same number of pulses appear in each signal slot over the duration of the \(M\) symbols), then there are \(M/n\) aggregated pulses in \(y_r[k]\) for \(k\in\{0,\ldots,n-1\}\).
+
+\noindent
+With this set up the problem is almost identical to~\eqref{eq:position} with only a difference in the constant multiplying the periodic signal:
+\begin{equation}
+y_r[k]\sim
+\operatorname{Poi}
+\left(\xi_{k,r}(\delta_r)\right),
+\end{equation}
+with
+\begin{equation}
+\begin{aligned}
+\xi_{k,r}(\delta_r)
+=  M\lambda_{b,r} T_s+\frac{M}{n}\lambda_{s,r} \int_{kT_s}^{(k+1)T_s}  \operatorname{rect}_{(nT_s)} \left((t-\delta_r) \,\text{mod}\, QT_s\right) \di t.
+\end{aligned}
+\end{equation}
+
+\subsection{ML Estimation PPM Sequence}
+
+\noindent
+The result is almost exactly the same as in~\Cref{sub:MLestimation2} with a slight difference with the constants. When we then take the derivative with the log-likelihood over the interval \(\delta \in(kT_s,(k+1)T_s)\) we now get:
+\begin{equation}
+\begin{aligned}
+\frac{\partial}{\partial \delta} \ell(\delta ; \mathbf{x})
+&= \frac{\partial}{\partial \delta}\sum_{k=0}^{Q-1} y_k \log \left( \xi_k(\delta)\right)
+=  \sum_{k=0}^{Q-1}y_k\frac{ \frac{\partial}{\partial \delta}\xi_k(\delta)}{\xi_k(\delta)}\\
+&= y_{k+n} \frac{(M/n)\lambda_s}{\left((M/n)\lambda_s \delta-k (M/n)\lambda_s T_s\right)+M\lambda_b T_s}\\
+&-y_k \frac{(M/n)\lambda_s}{\left(-(M/n)\lambda_s \delta+(k+1) (M/n)\lambda_s T_s\right)+M\lambda_b T_s}\\
+&= \frac{y_{k+n}}{\left( \delta-k  T_s\right)+\frac{n\lambda_b}{\lambda_s} T_s}- \frac{y_k}{\left(- \delta+(k+1)  T_s\right)+\frac{n\lambda_b}{\lambda_s} T_s}.
+\end{aligned}
+\end{equation}
+
+\noindent
+From this we know that:
+\begin{equation}
+\begin{aligned}
+\delta_{\mathrm{ML}, i}
+&=T_s\left[\frac{y_{i+n}\left(i+1 +\frac{n\lambda_b}{\lambda_s} \right)+y_i\left(i -\frac{n\lambda_b}{\lambda_s} \right)}{y_i+y_{i+n}}\right],
+\end{aligned} 
+\end{equation}
+and the final estimate is then found as the maximum between the interval estimates:
+\begin{equation}
+\delta_{\mathrm{ML}}=\underset{i}{\argmax} \; \ell\left(\delta_{\mathrm{ML}, i} ; \mathbf{y}\right) \quad i\in\{0, \ldots, Q-1\}.
+\end{equation}
+The Cramér-Rao Bound, the bias and the variance of the are the same as the ones found in~\Cref{sec:Single-Pulse-Delay-Estimation} and~\Cref{sec:Repeated-Pulse-Delay-Estimation} only with \(y_r[k]\) as defined in~\eqref{eq:aparently2} instead of \(x_r[k]\) and replacing \(\lambda_b\) with \(n\lambda_b\).

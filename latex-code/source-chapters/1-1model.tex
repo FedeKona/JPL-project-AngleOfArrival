@@ -1,0 +1,20 @@
+\chapter{Maximum Likelihood Methods}\label{ch:MLEmethods}
+
+\section{The Model}\label{sec:Model}
+
+An array of \(R \in \mathbb{Z}_{\geq2}\) elements receives, from a single far-field source, a stream of photons during an \textbf{observation window }of length \(W\in\mathbb{R}_{\geq0}\).
+We assume that the antennas in the array use an optical detector that provides the number of photon counts per given time interval.
+
+\iffalse
+\noindent
+We allow every element \(r\) within the array to have a individual \textbf{timestamp resolution} \(\Delta_r\in \mathbb{R}_{\geq0}\), but we assume a common \textbf{time slot} of length \(T_s\in \mathbb{R}_{\geq0}\) across all elements, implicitly assuming that \(T_s\) is an integer multiple of \(\Delta_r\) \(\forall r\in\{0,\ldots,R-1\}\).
+\fi
+
+\noindent
+The continuous time axis \(t \in \mathbb{R}\) is therefore divided into a sequence of time slots: \((iT_s,(i+1)T_s)\) with \(i \in \mathbb{Z}_{\geq0}\). Within each slot interval \(i\), \(x_r[i]\) photons are detected by element \(r\), therefore, the number of photons arriving can be described by a discrete sequence of whole numbers \((x_r[0],x_r[1],x_r[2],\ldots)\).
+
+\noindent
+In order to evaluate the TDOA \(\tau_{jk}\) between two elements in the array, the transmitter uses a signaling scheme, and the receivers implement a strategy to estimate such a delay. 
+
+\noindent
+In~\Cref{sec:Single-Pulse-Delay-Estimation} we are going to look at a \textbf{single pulse} MLE method, in~\Cref{sec:Repeated-Pulse-Delay-Estimation} we are going to consider a \textbf{repeated pulse} scheme and in~\Cref{sec:Known-PPM-sequence-Delay-Estimation} we are going to generalize the problem to a \textbf{known PPM sequence} with inter-symbol guard times.

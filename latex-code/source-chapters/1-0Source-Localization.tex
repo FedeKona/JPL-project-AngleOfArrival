@@ -1,0 +1,769 @@
+\chapter{The Source Localization Problem}\label{ch:sourcelocalization}
+
+\section{Introduction}\label{sec:introduction}
+
+In the context of array signal processing, the source localization problem consists of estimating the position of an emitting source, using an array of passive receivers, sometimes also called elements or sensors~\cite{benesty2008microphone}. The position of the source can be represented in Cartesian coordinates \(\mathbf{p}=[p_x,p_y,p_z]^\mathsf{T}\) or spherical coordinates \(\mathbf{p}_{\text{sph}}=[\rho,\phi,\theta]^\mathsf{T}\) as shown in~\Cref{fig:coordinatex}.
+
+\iffalse
+\begin{figure}[!t]
+\centering
+\includegraphics[
+  width=0.4\textwidth,
+  keepaspectratio,
+  clip,
+]{lastfigs/coordinates.pdf}
+\caption[]{Spherical coordinate system with \(\phi\) being the azimuth angle and \(\theta\) being the polar (or bearing) angle defined as in~\cite{van2002optimum}.}
+\label{fig:coordinatess}
+\end{figure}
+\fi
+
+\begin{figure}[!b]
+\centering
+\resizebox{0.4\linewidth}{!}{\input{lastfigs/coordinates.tex}}
+\caption[]{Spherical coordinate system where \(\rho\) is the radial distance, \(\phi\) is the azimuth angle, and \(\theta\) is the polar (or bearing) angle defined as in~\cite{van2002optimum}.}
+\label{fig:coordinatex}
+\end{figure}
+
+\noindent
+Given an array with \(R\) elements, if \(\mathbf{r}_r=[x_{r},y_{r},z_{r}]^\mathsf{T}\) is the location of sensor \(r\in\{0,\ldots,R-1\}\),
+we denote the distance between the source and sensor \(r\) by 
+\begin{equation}
+d_r=\|\mathbf{p}-\mathbf{r}_r\|.
+\label{eq:laprima}
+\end{equation}
+where \(\|\cdot\|\) is the Euclidean norm. 
+The segments that join sensors pairs are called baselines of the array, and their length, i.e. the distance between sensors \(i\) and \(j\) is \(\|\mathbf{r}_j-\mathbf{r}_i\|\), where \(i,j\in\{0,\ldots,R-1\}\).
+Two other important quantities are the maximum aperture of the array \(A_{\text{max}}\) defined as
+\begin{equation}
+A_{\text{max}}
+= \underset{0\leq i,j\leq R-1}{\max} \left\|\mathbf{r}_i-\mathbf{r}_j\right\|,
+\label{eq:a}
+\end{equation}
+and the minimum source-array distance:
+\begin{equation}
+d_{\text{min}} 
+= \underset{0\leq r\leq R-1}{\min} \left\|\mathbf{p}-\mathbf{r}_r\right\|
+= \underset{0\leq r\leq R-1}{\min} \; d_r.
+\end{equation}
+
+\noindent
+We say that the source is in the far field of the array if the distance between the elements of the array and the source is much greater than the distance between the elements, that is, if \(d_{\text{min}}\gg A_{\text{max}}\). 
+With this assumption, if the medium through which the signal travels is homogeneous (position-independent) and non-dispersive (frequency-independent), the waves of the signal can be considered to be planar (as shown in \Cref{fig:incidentwave}) once they reach the receivers~\cite{stoica2005spectral,van2002optimum,johnson1992array}.
+
+\noindent
+Under the far filed approximation, the information about the range of the source \(\|\mathbf{p}\|=\rho\) is lost, and the source localization problem reduces to estimating the direction of arrival (DOA) of the signal by finding the {azimuth} \(\phi\) and bearing \(\theta\) angles of the wavefront incident to the baselines.
+
+\noindent
+There are many methods available that estimate the DOA depending on the application and the system requirements. Delay and sum beamforming methods, or subspace-based methods such as \mbox{MUSIC} and ESPRIT~\cite{van2002optimum,stoica2005spectral,benesty2008microphone,Falk2004} achieve high performance under narrowband signal and additive Gaussian noise conditions, but require receivers that implement coherent detection schemes that preserve the phase of the signal.
+
+\noindent
+However, current satellite optical communication standards~\cite{CCSDS} make use of high photon efficiency (HPE) systems, where information is modulated onto the optical signal using pulse-position modulation (PPM) coupled with the use of inter-symbol guard times (ISGTs)~\cite{rogalin2017synchronization,net2023optical}. In these protocols, receivers use a direct detection scheme that ignores the phase of the optical signal and instead provides the number of photo-electron counts per time slot, a process better modeled by Poisson statistics~\cite{gagliardi1995optical}. We examine this specific model in more detail in~\Cref{sec:Known-PPM-sequence-Delay-Estimation}.
+
+\noindent
+Time-delay-based methods do not need phase information, they first estimate the time-difference-of-arrival (TDOA) between pairs of sensors and then determine the DOA estimates according to the geometry of the array~\cite{Bimodal-sound-source-tracking}. Let us denote the TDOA between sensors \(i\) and \(j\) by
+\begin{equation}
+\tau_{ij} = \delta_j-\delta_i=\frac{d_j}{c}-\frac{d_i}{c}
+=\frac{\left\|\mathbf{p}-\mathbf{r}_j\right\|- \left\|\mathbf{p}-\mathbf{r}_i\right\|}{c},
+\label{eq:thehyperbolone}
+\end{equation}
+where \( d_r\) is the source-sensor \(r\) distance as in~\eqref{eq:laprima}, \(\delta_r\) is the total time delay that takes the signal to cross \( d_r\), and \(c\) is the speed of light.
+
+\noindent
+The set of points \(\mathbf{p}\in \mathbb{R}^D\), that satisfy~\eqref{eq:thehyperbolone}, if \(D=3\), is one branch of a hyperboloid whose foci are the coordinates of the two sensors \(i\) and \(j\). When \(D=2\), the set of possible solutions is one branch of a general hyperbola, again with foci \(\mathbf{r}_j\) and \(\mathbf{r}_j\)~\cite{passive_localization,The-Geometry-of-Far-Field-Passive-Source-Localization}. 
+
+\noindent
+Since every distinct pair of sensors has its own TDOA and its associated hyperbolic curve, the minimum number of sensors \(R\) required to uniquely identify the source position is \(R\geq D+1\) where \(D\) is the dimensionality of the problem. An example where \(D=2\) and \(R=3\) is shown in~\Cref{fig:hperbolas}.
+\begin{figure}[!b]
+\centering
+\input{lastfigs/hperbolas}
+\caption[]{Three hyperbolic curves associated to TDOAs \(\tau_{01},\tau_{02}\) and \(\tau_{23}\) that satisfy~\eqref{eq:thehyperbolone}. The dashed curves correspond instead to the mirrored TDOAs \(\tau_{10},\tau_{20}\) and \(\tau_{32}\).}
+\label{fig:hperbolas}
+\end{figure}
+In practice, the bias and variance of the TDOA estimates distort the hyperbolas, so that they no longer intersect at a single point, but instead delineate a region where the source should be~\cite{Falk2004,Bimodal-sound-source-tracking}.
+
+\noindent
+Without loss of generality, if we place the origin of the coordinate system in the center of the array such that
+\begin{equation}
+\sum_{r=0}^{R-1}\mathbf{r}_r=\mathbf{0}=[0,0,0]^{\mathsf{T}},
+\end{equation}
+then the far field condition \(d_{\text{min}}\gg A_{\text{max}}\) is equivalent  to the condition \(\rho=\|\mathbf{p}\| \gg \|\mathbf{r}_r\| \) for all \( r\in\{0,\ldots,R-1\} \).
+Using the Taylor expansion \(\sqrt{1+a}=1+a / 2+\mathcal{O}\left(a^2\right)\) as \(a\rightarrow0\), we can make the following approximation~\cite{FundamentalsRadarCheney2009,The-Geometry-of-Far-Field-Passive-Source-Localization}:
+
+\begin{figure}[!b]
+\centering
+\includegraphics[
+  width=0.65\textwidth,
+  keepaspectratio,
+  clip,
+]{lastfigs/incidentwave.pdf}
+\caption[]{Representation of the far field approximation. The dashed lines represent the incoming planar waves, \(\mathbf{r}_0=[0,0,A/2]^\mathsf{T}\) and \(\mathbf{r}_1=[0,0,-A/2]^\mathsf{T}\) are the location of the sensors, \(\mathbf{p}\) is the location of the source and \(\mathbf{k}\) is the angular wave vector of the plane wave\cite{van2002optimum,wiki:Wave_vector}, with \(\mathbf{k}/\|\mathbf{k}\|=-\mathbf{u}\), with \(\mathbf{u}\) defined in~\eqref{eq:pointingvector}.}
+\label{fig:incidentwave}
+\end{figure}
+
+\begin{equation}
+\left\|\mathbf{p}-\mathbf{r}_j\right\|
+=\|\mathbf{p}\|\sqrt{1-\frac{2\mathbf{r}_j^\mathsf{T}\mathbf{p} }{\|\mathbf{p}\|^2}+\frac{\|\mathbf{r}_i\|^2}{\|\mathbf{p}\|^2}}
+=\|\mathbf{p}\|-\mathbf{r}_j^\mathsf{T}\frac{\mathbf{p}}{\|\mathbf{p}\|}+\mathcal{O}\left(\|\mathbf{p}\|^{-1}\right).
+\label{eq:tay1}
+\end{equation}
+Given~\eqref{eq:tay1}, we can then approximate~\eqref{eq:thehyperbolone} as
+\begin{equation}
+\tau_{ij}\approx-\frac{1}{c}
+\left(
+-\mathbf{r}_j^\mathsf{T}\frac{\mathbf{p}}{\|\mathbf{p}\|}
++\mathbf{r}_i^\mathsf{T}\frac{\mathbf{p}}{\|\mathbf{p}\|}
+\right)
+= -\frac{1}{c}\left(\mathbf{r}_j-\mathbf{r}_i\right)^\mathsf{T}\mathbf{u},
+\label{eq:tay22}
+\end{equation}
+where \(\mathbf{u}\) is the unit vector that points from the origin to the source, namely using the conventions of~\Cref{fig:coordinatex}:
+\begin{equation}
+\mathbf{u}=
+\frac{\mathbf{p}}{\|\mathbf{p}\|}=
+\left[\begin{array}{c}
+\sin \theta \cos \phi \\
+\sin \theta \sin \phi \\
+\cos \theta
+\end{array}\right].
+\label{eq:pointingvector}
+\end{equation}
+
+\noindent
+An example of approximation~\eqref{eq:tay22} can be seen in~\Cref{fig:incidentwave}. Since we are assuming a
+constant speed of light, the incoming planar wavefronts make an angle with the baseline of the two receivers and therefore arrive at different time instances. The time difference that takes the wavefront to get from one element of the array to another is exactly the TDOA \(\tau_{01}\).
+
+\noindent
+From~\eqref{eq:tay22}, if \(\mathbf{r}_0=[0,0,A/2]^\mathsf{T}\) and \(\mathbf{r}_1=[0,0,-A/2]^\mathsf{T}\) , then 
+\begin{equation}
+\begin{aligned}
+\tau_{01}
+& \approx
+ -\frac{1}{c}\left(\mathbf{r}_1-\mathbf{r}_0\right)^\mathsf{T}\mathbf{u}\\
+& =
+-\frac{1}{c}\left[(x_{1}-x_{0})\sin \theta \cos \phi  +(y_{1}-y_{0})\sin \theta \sin \phi  +(z_{1}-z_{0})\cos \theta  \right]\\
+& = \frac{-(z_{1}-z_{0})\cos\theta}{c}\\
+& =\frac{A\cos\theta}{c}.
+\label{eq:simplemodel}
+\end{aligned}
+\end{equation}
+
+\noindent
+To better understand the entity of the errors we make when we assume the far field conditions, we reconsider~\eqref{eq:tay22} and we denote the far field approximation as:
+\begin{equation}
+c\,\tau_{\text{FF}ij}
+= -\left(\mathbf{r}_j-\mathbf{r}_i\right)^\mathsf{T}\mathbf{u}
+\overset{(a)}{=} {A\cos\theta}
+\overset{(b)}{=} {A_{\text{max}}\cos\theta},
+\end{equation}
+where in step (a) we consider the same sensor placements of~\eqref{eq:simplemodel} and instead in step (b) we assume that \(\|\mathbf{r}_j-\mathbf{r}_i\|=A_{\text{max}}\). Instead, if we include more terms in the Taylor approximation of~\eqref{eq:tay1} we get:
+\begin{equation}
+\begin{aligned}
+c\,\tau_{ij}
+= & - \left(\mathbf{r}_j-\mathbf{r}_i\right)^\mathsf{T}\mathbf{u}+\frac{\left\|\mathbf{r}_j\right\|^2-\left(\mathbf{r}_j^\mathsf{T}\mathbf{u}  \right)^2-\left\|\mathbf{r}_i\right\|^2+\left(\mathbf{r}_i^\mathsf{T}\mathbf{u}  \right)^2}{2\|\mathbf{p}\|} \\
+& +\frac{\left(\mathbf{r}_j^\mathsf{T}\mathbf{u}  \right)\left[\left\|\mathbf{r}_j\right\|^2-\left(\mathbf{r}_j^\mathsf{T}\mathbf{u}  \right)^2\right]-\left(\mathbf{r}_i^\mathsf{T}\mathbf{u}  \right)\left[\left\|\mathbf{r}_i\right\|^2-\left(\mathbf{r}_i^\mathsf{T}\mathbf{u}  \right)^2\right]}{2\|\mathbf{p}\|^2}+\mathcal{O}\left(\|\mathbf{p}\|^{-3}\right)\\
+= &\; A \cos \theta+
+\frac{\left(\mathbf{r}_j^{\mathsf{T}} \mathbf{u}-\mathbf{r}_i^{\mathsf{T}} \mathbf{u}\right)}{2 \rho^2}\frac{A^2}{4} (1-\cos ^2 \theta)+\mathcal{O}\left(\rho^{-3}\right)\\
+= & \; A_{\text{max}} \cos \theta-\frac{A_{\text{max}}^3}{8 \rho^2} \cos \theta \sin ^2 \theta+\mathcal{O}\left(\rho^{-3}\right),
+\end{aligned}
+\end{equation}
+where again we used \(\mathbf{r}_i=[0,0,A/2]^\mathsf{T}\), \(\mathbf{r}_j=[0,0,-A/2]^\mathsf{T}\) and \(\|\mathbf{p}\|=\rho\).
+Therefore, assuming a simple two-element array, symmetric with respect to the origin like~\eqref{eq:simplemodel}, making the far field assumption yields an absolute error:
+\begin{equation}
+c\left|\tau_{ij}-\tau_{\text{FF}ij}\right|
+\approx\frac{A_{\text{max}}^3}{8 \rho^2}  \sin ^2 \theta |\cos \theta|\leq\frac{A_{\text{max}}^3}{12 \sqrt{3} \rho^2},
+\label{eq:errro1}
+\end{equation}
+and a relative error
+\begin{equation}
+\frac{\left|\tau_{ij}-\tau_{\text{FF}ij}\right|}{|\tau_{ij}|}
+\approx\frac{A_{\text{max}}^2}{8 \rho^2}  \sin ^2 \theta \leq \frac{A_{\text{max}}^2}{8 \rho^2}=\varepsilon_{\text{max}}.
+\label{eq:relativeerr}
+\end{equation}
+
+\noindent
+We can see from~\eqref{eq:errro1} that the absolute maximum TDOA error is achieved when
+\begin{equation}
+\theta =\argmax_{\theta}\frac{|\tau_{ij}-\tau_{\text{FF}ij}|}{c}
+=\arccos \left(\pm\frac{1}{ \sqrt{3}}\right)
+\approx54.74^{\circ}
+\quad
+\text{or}
+\quad
+\theta \approx125.26^{\circ}.
+\end{equation}
+
+\noindent
+Given these results, we compute in~\Cref{tbl:errortable} the errors made when assuming the far field approximation in three cases: when the source is at GEO distance, Moon distance, and at \(2.5\) AU, a distance comparable to the one of the Psyche spacecraft during the mission lifetime. We are assuming a maximum aperture of the array \(A_{\max}=210.35\,\mathrm{km}\) following the 3-element array set-up used in the Deep Space Optical Communication (DSOC) project~\cite{DSOC}, pictured in~\Cref{fig:antennasholder}.
+
+\begin{figure}[tbh]
+\centering
+\includegraphics[
+  width=0.55\textwidth,
+  keepaspectratio,
+  clip,
+]{lastfigs/Antennas.png}
+\caption[]{The three ground stations used for receiving the DSOC signal and the distances between them.~\cite{DSOC}}
+\label{fig:antennasholder}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l r r r r @{}}
+\hline
+Source & $\rho$ (km) & $\rho/A_{\max}$ & \multicolumn{1}{c}{$\varepsilon_{\max}$}  & TDOA error (ns) \\
+\hline
+GEO                   & \(35{,}786\)           & \(170\)             & $4.30\times 10^{-4}\,\%$  & $1.16$ \\
+Moon                  & $384{,}400$          & $1830$            & $3.73\times 10^{-6}\,\%$  & $1.01\times 10^{-2}$ \\
+Psyche (2.5 AU) & $3.74\times 10^{8}$ & $1.78\times 10^{6}$ & $3.94\times 10^{-12}\,\%$ & $1.06\times 10^{-8}$ \\
+\hline
+\end{tabular*}%
+\caption{
+Relative and absolute TDOA errors (in nanoseconds), from the far field approximation, at different source distances with $A_{\max}=210.35\,\mathrm{km}$. The maximum relative error \(\varepsilon_{\max}\) is computed from~\eqref{eq:relativeerr}, and the absolute TDOA  error is computed from~\eqref{eq:errro1}, taking into consideration the worst possible angle \(\cos \theta= \pm {1}/{\sqrt{3}}\). (\(c = 299{,}792{,}458 \,\text{m/s}\)).
+}
+\label{tbl:errortable}
+\end{table}
+
+\newpage
+\noindent
+With time-delay-based methods, all the information regarding the direction of arrival can be determined with the TDOA estimates and the geometry of the array. In~\Cref{sub:LS} we investigate how to combine the TDOA estimates assuming that they are provided to us, while in~\Cref{ch:MLEmethods} and~\Cref{ch:crosscorrere} we concentrate on the methods for estimating the TDOAs.
+
+
+%-----------------------------------------------------------------------------------------------------------------------------
+%-----------------------------------------------------------------------------------------------------------------------------
+\iffalse
+\begin{align}
+& as we discussed, I suggest introducing the notation :\widehat{\delta}_i  = \delta_i + \epsilon_i\\
+& such that you get estimates:\\
+& \widehat{\tau}_{i,j} = \delta_j - \delta_i + \epsilon_i + \epsilon_k = \tau_{i,j} + \epsilon_i + \epsilon_k\\
+& with \epsilon_i ~ N(0, \sigma_\epsilon^2) \forall i
+\end{align}
+\fi
+
+\section{Least Squares Method}\label{sub:LS}
+
+As we have already seen in~\eqref{eq:thehyperbolone}, we define the TDOA as between sensors \(i\) and \(j\) by:
+\begin{equation}
+\tau_{ij}=\delta_j-\delta_i,
+\label{eq:theboch}
+\end{equation}
+where \(\delta_r\) is the total time delay from the source to element \(r\). Since \(\tau_{ij}=-\tau_{ji}\), the number of distinct TDOAs in an array of \(R\) elements is like the number of edges in a complete graph:
+\begin{equation}
+\binom{R}{2}=\frac{R!}{(R-2)!2!}=\frac{R(R-1)}{2}.
+\end{equation}
+
+
+
+\noindent
+ However, only \(R-1\) distinct TDOAs are required to determine all the others~\cite{passive_localization}. Indeed, as shown in~\Cref{fig:referee}, if we choose a reference receiver (by convention receiver \(0\)), all TDOAs are linear combinations of the first \(R-1\) TDOAs: \((\tau_{01},\ldots\tau_{0(R-1)})=(\delta_1-\delta_0,\ldots,\delta_{R-1}-\delta_0)\) because
+\begin{equation}
+\tau_{ij}=\delta_j-\delta_i=\left(\delta_j-\delta_0\right)-\left(\delta_i-\delta_0\right)=\tau_{0k}-\tau_{0j}.
+\label{eq:cirular}
+\end{equation}
+
+\begin{figure}[htb]
+\centering
+{\input{lastfigs/reference}}
+\caption[]{Graph the all the \(\binom{R}{2}\) distinct TDOAs when \(R=4\). If we assume element \(0\) to be the reference receiver, then we only need its \(R-1=3\) TDOAs to determine the other ones, outlined here as dashed blue connections. Indeed \(\tau_{12}=\tau_{02}-\tau_{01}\),  \(\tau_{13}=\tau_{03}-\tau_{01}\) and  \(\tau_{23}=\tau_{03}-\tau_{02}\).}
+\label{fig:referee}
+\end{figure}
+
+\noindent
+Until now we have assumed to have access to the true exact total time delays \(\delta_r\) and therefore to have available the true TDOAs, but in reality we only have an estimate of these quantities. We are going to model these estimates as random variables with a certain mean and variance. Let us denote the estimate of \(\delta_r\) with \(\hat{\delta}_r\) and denote its mean and variance with
+\begin{equation}
+\mean{\hat{\delta}_r}=\mu_{r} \quad \text{and} \quad \text{Var}(\hat{\delta}_r)=\sigma_r^2
+\quad
+\text{with}
+\quad r \in\{0,\ldots,R-1\}.
+\label{eq:thesedef}
+\end{equation}
+
+\noindent
+We then denote the estimate of the TDOAs as: \(\hat{\tau}_{ij}=\hat{\delta}_j-\hat{\delta}_i\) and after plugging~\eqref{eq:thesedef} into~\eqref{eq:theboch} we get
+\begin{align}
+\mean{\hat{\tau}_{ij}}=\mu_{j}-\mu_{i} \quad \text{and} \quad \text{Var}(\hat{\tau}_{ij})=\sigma_j^2+\sigma_i^2-2\text{Cov}(\hat{\delta}_j,\hat{\delta}_i).
+\label{eq:modelofestimate}
+\end{align} 
+
+\noindent
+In~\Cref{ch:MLEmethods} and~\Cref{ch:crosscorrere} we are going to examine models of the bias and variance of these estimates in more detail, but if we assume that all the estimates of the TDOAs \(\hat{\tau}_{ij}\) are provided to us, we can then estimate the DOA.
+
+\noindent
+Following the far field approximation model seen in~\eqref{eq:tay22}, for an arbitrary array with \(R\) elements located in general coordinates \([x_{r},y_{r},z_{r}]\), after the choice of a reference element located in \([x_{0},y_{0},z_{0}]\) we have the following system of equations:
+
+\begin{equation}
+\left[\begin{array}{c}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\vdots \\
+\hat{\tau}_{0(R-1)}
+\end{array}\right]
+ = -\frac{1}{c} \left[\begin{array}{ccc}
+(x_1-x_0) & (y_1-y_0) & (z_1-z_0) \\
+(x_2-x_0) & (y_2-y_0) & (z_2-z_0) \\
+\vdots & \vdots & \vdots \\
+(x_{R-1}-x_0) & (y_{R-1}-y_0) & (z_{R-1}-z_0) \\
+\end{array}\right] \left[\begin{array}{c}
+\sin \hat{\theta} \cos \hat{\phi} \\
+\sin \hat{\theta} \sin \hat{\phi} \\
+\cos \hat{\theta}
+\end{array}\right],
+\end{equation}
+in vector notation:
+\begin{equation}
+\hat{\boldsymbol{\tau}}=\mathbf{A}\hat{\mathbf{u}}
+\label{eq:thesystem}
+\end{equation}
+where \(\mathbf{A}\in\mathbb{R}^{(R-1)\times D}\) with \(D\) being the dimension in which the array lives. Note that if our array is planar i.e. \(D=2\), for \(\mathbf{A}\) to have full rank, we need to have at least \(3\) non-collinear sensors, while for \(D=3\) we need at least \(4\) non-coplanar sensors.
+
+\noindent
+From system~\eqref{eq:thesystem}, assuming that the estimate \(\hat{\boldsymbol{\tau}}\) is provided, the least squares estimates of the DOA are given by the minimization:
+\begin{equation}
+\begin{aligned}
+\hat{\mathbf{u}}_{\mathrm{LS}}
+=\underset{\mathbf{u}}{\argmin}\|\hat{\boldsymbol{\tau}}-\mathbf{A}\mathbf{u}\|^2,
+\end{aligned}
+\end{equation}
+and if matrix \(\mathbf{A}\) is full rank, then \(\hat{\mathbf{u}}_{\mathrm{LS}}\) is unique and is given by:
+\begin{equation}
+\hat{\mathbf{u}}_{\mathrm{LS}}=\left(\tran{A} \mathbf{A}\right)^{-1} \tran{A} \hat{\boldsymbol{\tau}},
+\label{eq:estimate}
+\end{equation}
+from which, given that \(\hat{\mathbf{u}}=[\hat{u}_x,\hat{u}_y,\hat{u}_z]^\mathsf{T}\), the angels of the source are:
+\begin{align}
+\hat{\phi}_{\mathrm{LS}} & = \operatorname{atan2}\left(\frac{\hat{u}_y}{\hat{u}_x}\right),\\
+\hat{\theta}_{\mathrm{LS}} & = \arccos\left(\hat{u}_z\right).
+\end{align}
+
+\noindent
+To make the estimate of the DOA more robust and not dependent on the choice of the reference, we can include in \(\mathbf{A}\) all \(\binom{R}{2}\) pairwise equations taking advantage of the redundancy of the TDOAs. In~\cite{yang2005cramer}, it is proved that, if the TDOA estimates \(\hat{\tau}_{ij}\) are unbiased Gaussians, the more TDOA measurements we use, the smaller
+the Cramér–Rao lower bond gets. For example, in the case of 3 sensors \(r\in\{0,1,2\}\) instead of  
+\begin{equation}
+\hat{\boldsymbol{\tau}}=
+\left[\begin{array}{c}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02}
+\end{array}\right]
+ = -\frac{1}{c} \left[\begin{array}{ccc}
+(x_1-x_0) & (y_1-y_0) & (z_1-z_0) \\
+(x_2-x_0) & (y_2-y_0) & (z_2-z_0) \\
+\end{array}\right] \left[\begin{array}{c}
+\sin \hat{\theta} \cos \hat{\phi} \\
+\sin \hat{\theta} \sin \hat{\phi} \\
+\cos \hat{\theta}
+\end{array}\right],
+\end{equation}
+system~\eqref{eq:thesystem} we would be:
+\begin{equation}
+\hat{\boldsymbol{\tilde{\tau}}}=
+\left[\begin{array}{c}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\hat{\tau}_{12}
+\end{array}\right]
+ = -\frac{1}{c} \left[\begin{array}{ccc}
+(x_1-x_0) & (y_1-y_0) & (z_1-z_0) \\
+(x_2-x_0) & (y_2-y_0) & (z_2-z_0) \\
+(x_2-x_1) & (y_2-y_1) & (z_2-z_1) \\
+\end{array}\right] \left[\begin{array}{c}
+\sin \hat{\theta} \cos \hat{\phi} \\
+\sin \hat{\theta} \sin \hat{\phi} \\
+\cos \hat{\theta}
+\end{array}\right].
+\end{equation}
+
+\noindent
+Suppose that indeed the estimates \(\hat{\delta}_r\) are Gaussian distributed with mean and variances as in~\eqref{eq:thesedef}, what is the covariance matrix of the estimates \(\hat{\tau}_{ij}\)?
+
+\noindent
+Let us first consider the case where we take into consideration only \(R-1\) linearly independent TDOA with a reference element in common. In this case we have:
+\begin{equation}
+\boldsymbol{\hat{\tau}}=
+\left[\begin{array}{c}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\vdots \\
+\hat{\tau}_{0(R-1)}
+\end{array}\right]
+=\left[\begin{array}{ccccc}
+-1 & 1 & 0 & \cdots & 0 \\
+-1 & 0 & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+-1 & 0 & 0 & \cdots & 1
+\end{array}\right] 
+\left[\begin{array}{c}
+\hat{\delta}_{0}\\
+\hat{\delta}_{1}\\
+\vdots \\
+\hat{\delta}_{R-1}
+\end{array}\right]
+= \mathbf{B}\hat{\boldsymbol{\delta}},
+\end{equation}
+where \(\mathbf{B}\in\mathbb{R}^{(R-1)\times R}\) and
+\begin{equation}
+\text{Cov}(\boldsymbol{\hat{\tau}})=\mathbf{B}\Sigma_\delta\mathbf{B}^\mathsf{T}\in\mathbb{R}^{(R-1)\times (R-1)}.
+\label{eq:thecovone}
+\end{equation}
+If we assume all \(\hat{\delta}_{r}\) to be mutually independent, then~\eqref{eq:thecovone} becomes:
+\begin{equation}
+\text{Cov}(\boldsymbol{\hat{\tau}})=\sigma_0^2 \,\mathbf{1}_{(R-1)}+\operatorname{diag}\left(\sigma_1^2, \ldots, \sigma_{R-1}^2\right),
+\end{equation}
+where \(\mathbf{1}_{N}\) is the all ones matrix of size \(N\times N\) and \(\text{diag}(\mathbf{v})\) is the diagonal matrix of the vector \(\mathbf{v}\).
+For example, if \(R=4\) we have:
+\begin{equation}
+\text{Cov}\left(\boldsymbol{\hat{\tau}}\right)
+=\text{Cov}\left(\left[\begin{array}{c}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\hat{\tau}_{03}
+\end{array}\right]\right)
+=
+\left[\begin{array}{ccc}
+\sigma_0^2+\sigma_1^2 & \sigma_0^2 & \sigma_0^2 \\
+\sigma_0^2 & \sigma_0^2+\sigma_2^2 & \sigma_0^2 \\
+\sigma_0^2 & \sigma_0^2 & \sigma_0^2+\sigma_3^2
+\end{array}\right].
+\label{eq:ilrosso}
+\end{equation}
+We then note that if \(\sigma_r^2> 0 \; \forall r\in\{0,\ldots,R-1\}\), then~\eqref{eq:ilrosso} is positive definite and has full rank.
+
+\noindent
+If instead we consider all the \(\binom{R}{2}\) pairwise differences, we have:
+\begin{equation}
+\text{Cov}(\hat{\boldsymbol{\tilde{\tau}}})=\tilde{\mathbf{B}}\Sigma_\delta\tilde{\mathbf{B}}^\mathsf{T}\in\mathbb{R}^{\binom{R}{2}\times \binom{R}{2}},
+\label{eq:thecovone2}
+\end{equation}
+where this time the differencing matrix \(\tilde{\mathbf{B}}\in \mathbb{R}^{\binom{R}{2}\times R}\)~\cite{Least-squares-range} now contains all the pairwise differences of the array.
+Again, if we assume all \(\hat{\delta}_{r}\) to be mutually independent, then~\eqref{eq:thecovone2} becomes:
+\begin{equation}
+\text{Cov}(\hat{\boldsymbol{\tilde{\tau}}})=\tilde{\mathbf{B}}
+\operatorname{diag}\left(\sigma_0^2, \ldots, \sigma_{R-1}^2\right)
+\tilde{\mathbf{B}}^\mathsf{T},
+\end{equation}
+and if \(R=4\) we have:
+\begin{equation}
+\text{Cov}
+\left(\left[\begin{array}{c}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\hat{\tau}_{03} \\
+\hat{\tau}_{12} \\
+\hat{\tau}_{13} \\
+\hat{\tau}_{23}
+\end{array}\right]\right)
+=
+\left[\begin{array}{cccccc}
+\sigma_0^2+\sigma_1^2 & \sigma_0^2 & \sigma_0^2 & -\sigma_1^2 & -\sigma_1^2 & 0 \\
+\sigma_0^2 & \sigma_0^2+\sigma_2^2 & \sigma_0^2 & \sigma_2^2 & 0 & -\sigma_2^2 \\
+\sigma_0^2 & \sigma_0^2 & \sigma_0^2+\sigma_3^2 & 0 & \sigma_3^2 & \sigma_3^2 \\
+-\sigma_1^2 & \sigma_2^2 & 0 & \sigma_1^2+\sigma_2^2 & \sigma_1^2 & -\sigma_2^2 \\
+-\sigma_1^2 & 0 & \sigma_3^2 & \sigma_1^2 & \sigma_1^2+\sigma_3^2 & \sigma_3^2 \\
+0 & -\sigma_2^2 & \sigma_3^2 & -\sigma_2^2 & \sigma_3^2 & \sigma_2^2+\sigma_3^2
+\end{array}\right].
+\end{equation}
+We also note that \(\text{Cov}(\hat{\boldsymbol{\tilde{\tau}}})\) is positive definite only if \(R=2\), while if \(R\geq 3\) the rank of the matrix stays \(R-1\) while the dimention of its null space grows as \(\binom{R}{2}-(R-1)\).
+
+\noindent
+Finally, if we assume to have equal variance across the estimates \(\hat{\delta}_{r}\), i.e. \(\sigma^2=\sigma^2_0,\sigma^2_1,\ldots,\sigma^2_{R-1}\), then:
+\begin{equation}
+\text{Cov}(\boldsymbol{\hat{\tau}})=\sigma^2 \,\left(\mathbf{I}_{(R-1)}+\mathbf{1}_{(R-1)}\right)
+\quad
+\text{and}
+\quad
+\text{Cov}(\hat{\boldsymbol{\tilde{\tau}}})=\sigma^2 \,\tilde{\mathbf{B}}\tilde{\mathbf{B}}^\mathsf{T},
+\end{equation}
+where \(\mathbf{I}_{N}\) is the identity matrix of size \(N\times N\).
+
+\noindent
+From~\cite{Least-squares-range}, we add that there exists a recursive formula to compute matrix \(\tilde{\mathbf{B}}\):
+\begin{equation}
+\tilde{\mathbf{B}}_{r+1}=\left[\begin{array}{cc}
+-\mathbf{1}_r & \mathbf{I}_r \\
+\mathbf{0} & \tilde{\mathbf{B}}_r
+\end{array}\right]
+\; \text{and} \;
+\tilde{\mathbf{B}}_2=\left[\begin{array}{ll}
+-1 & 1
+\end{array}\right].
+\end{equation}
+
+
+\noindent
+Since sensors may not have identical specifications or may not be working under the same conditions, we could use a weighted least squares procedure as in~\cite{passive_localization}, to improve estimate~\eqref{eq:estimate} by considering weights proportional to the inverse of the variance of the TDOAs:
+\begin{equation}
+\mathbf{u}_{\mathrm{WLS}}=\left(\tran{A} \mathbf{W} \mathbf{A}\right)^{-1} \tran{A} \mathbf{W}\hat{\boldsymbol{\tau}},
+\end{equation}
+where in general
+\begin{equation}
+\mathbf{W}=
+\left[\begin{array}{cccc}
+1/\sigma_{01}^2 & 0 & \cdots & 0 \\
+0 & 1/\sigma_{02}^2 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & 1/\sigma_{(R-1)(R-2)}^2
+\end{array}\right]\in\mathbb{R}^{\binom{R}{2}\times\binom{R}{2}}.
+\end{equation}
+where \(\sigma_{jk}^2=\operatorname{Var}(\tau_{jk})\). Matrix \(W\) is diagonal when we assume that the TDOAs are independent, but in case of correlations between the measurements it could be easily adapted at each entry.
+
+%-----------------------------------------------------------------------------------------------------------------------------
+%-----------------------------------------------------------------------------------------------------------------------------
+
+\section{TDOA Averaging}
+
+Another useful method that has been shown in~\cite{Least-squares-range} to provide an accuracy advantage is the TDOA averaging procedure. From~\eqref{eq:cirular} we know that \(\forall \, i,j,k \in\{0,\ldots,R-1\}\):
+\begin{equation}
+\tau_{ij}+\tau_{jk}+\tau_{ki}=0,
+\label{eq:sumtozero}
+\end{equation}
+However, this might not be true when it comes to the estimated TDOAs:
+\begin{equation}
+\hat{\tau}_{ij}+\hat{\tau}_{jk}+\hat{\tau}_{ki}\overset{?}{=}0.
+\end{equation}
+The triangular circuital sum~\eqref{eq:sumtozero} represented in~\Cref{fig:kirkofix} might not sum up to zero. The idea is to force every triangular circuital sum equal to zero by subtracting from each TDOA the average of the TDOAs. Although this does not ensure that the estimate corresponds to a real location, it does suppress large anomalous localization errors. 
+
+\iffalse
+\begin{figure}[!b]
+\centering
+\includegraphics[
+  width=0.65\textwidth,
+  keepaspectratio,
+  clip,
+]{lastfigs/Kirkoff.pdf}
+\caption[]{Graph of a triangular circuital sum.}
+\label{fig:Kirkoff}
+\end{figure}
+\fi
+
+
+\begin{figure}[!b]
+\centering
+{\input{lastfigs/kirkofix.tex}}
+\caption[]{Graph of a circuital sum. With \(\hat{\tau}_{ij}+\hat{\tau}_{jk}+\hat{\tau}_{ki}=0\) or equivalenty \(\hat{\tau}_{ij}+\hat{\tau}_{jk}=\hat{\tau}_{ik}\).}
+\label{fig:kirkofix}
+\end{figure}
+
+
+
+\noindent
+For a given array with \(R\) sensors there are \(\binom{R}{3}\) distinct triangles and the equation of the TDOA averaging is:
+\begin{equation}
+\tilde{\tau}_{i j}=\hat{\tau}_{i j}-\frac{1}{R} \sum_{k \neq i, j}\left(\hat{\tau}_{i j}+\hat{\tau}_{j k}+\hat{\tau}_{k i}\right) 
+\quad \text{for}  \quad 
+0 \leq i<j \leq R-1 .
+\end{equation}
+Recalling~\eqref{eq:sumtozero},  when \(R=3\), if we define the triangular circuital sum as:
+\begin{equation}
+\mathbf{S}_3 \boldsymbol{\hat{\tau}}=\left[\begin{array}{lll}
+1 & -1 & 1
+\end{array}\right]
+\left[\begin{array}{l}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\hat{\tau}_{12}
+\end{array}\right]
+=\hat{\tau}_{01}-\hat{\tau}_{02}+\hat{\tau}_{12}
+=\hat{\tau}_{01}+\hat{\tau}_{12}+\hat{\tau}_{20}
+\label{eq:thecircuit}
+\end{equation}
+and from~\eqref{eq:thecircuit} we have:
+\begin{equation}
+\left[\begin{array}{l}
+\tilde{\tau}_{01} \\
+\tilde{\tau}_{02} \\
+\tilde{\tau}_{12}
+\end{array}\right]
+=
+\tilde{\boldsymbol{\tau}}=
+\left[\begin{array}{l}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\hat{\tau}_{12}
+\end{array}\right]-\frac{1}{3}\left[\begin{array}{rrr}
+1 & -1 & 1 \\
+-1 & 1 & -1 \\
+1 & -1 & 1
+\end{array}\right] \left[\begin{array}{l}
+\hat{\tau}_{01} \\
+\hat{\tau}_{02} \\
+\hat{\tau}_{12}
+\end{array}\right]
+=\boldsymbol{\hat{\tau}}-\frac{1}{3}\mathbf{S}_3^{\mathsf{T}}\mathbf{S}_3\boldsymbol{\hat{\tau}}.
+\end{equation}
+
+\noindent
+For a general \(R\) the updated averaged TDOAs can be found using
+\begin{equation}
+\tilde{\boldsymbol{\tau}}=\boldsymbol{\hat{\tau}}-\frac{1}{R}\mathbf{S}_R^{\mathsf{T}}\mathbf{S}_R\boldsymbol{\hat{\tau}},
+\end{equation}
+where from~\cite{Least-squares-range}
+\begin{equation}
+\mathbf{S}_{r+1}
+=\left[\begin{array}{cc}
+-\mathbf{D}_r & \mathbf{I}_{\binom{r}{2}} \\
+\mathbf{0} & \mathbf{S}_r
+\end{array}\right]
+\; \text{and} \;
+\mathbf{D}_{r+1}=\left[\begin{array}{cc}
+-\mathbf{1}_r & \mathbf{I}_r \\
+\mathbf{0} & \mathbf{D}_r
+\end{array}\right]
+\; \text{and} \;
+\mathbf{D}_2=\left[\begin{array}{ll}
+-1 & 1
+\end{array}\right],
+\end{equation}
+while \(I_{N}\) is the identity matrix of size \(N\times N\).
+
+%-----------------------------------------------------------------------------------------------------------------------------
+%-----------------------------------------------------------------------------------------------------------------------------
+
+\section{Geometry Considerations}
+
+Let us now look at how the geometry of the array affects the precision of the estimates of the DOA. The main geometric factors of an array are: the number of sensors \(R\), their relative positions, and the aperture between them. We define the maximum aperture of the array \(D\) as:
+\begin{equation}
+D = \underset{0\leq i,j\leq R-1}{\max} \left\|\mathbf{r}_i-\mathbf{r}_j\right\|.
+\end{equation}
+
+\noindent
+As a general principle, the larger the \(D\) in an array, the more precise the estimate of the DOA. Looking at the simple model~\eqref{eq:simplemodel}, and assuming \(D=d\), a simple first-order error propagation of uncertainty model~\cite{wiki:Propagation_of_uncertainty} gives us
+\begin{equation}
+\operatorname{Var}(\theta) \approx
+\frac{1}{D^2}
+\left(\frac{c}{\sin \mu_\theta}\right)^2
+\operatorname{Var}(\tau_{01}).
+\label{eq:varD}
+\end{equation}
+where we denote \(\mu_\theta\) as the mean of \(\theta\). 
+
+\noindent
+When we add more sensors to the array, assuming that all the TDOA estimates \(\tau_{0k}\) are completely independent and with the same variance \(\sigma_\tau^2\), the variance of the average TDOA is:
+\begin{equation}
+\operatorname{var}\left(\frac{1}{R-1} \sum_{k=1}^{R-1}  \tau_{0k}\right)=\frac{\sigma_\tau^2}{R-1} .
+\label{eq:varR}
+\end{equation}
+Plugging in~\eqref{eq:varD} the average variance, we can say that in general, the uncertainty of the the DOA estimates decreases quadratically with the aperture between the sensors \(D\)and linearly with the number sensors \(R\). 
+
+\noindent
+In~\cite{yang2005cramer} a detailed treatment on the best geometry is discussed \textit{\color{blue}{(That I do not think is super correct.)}}. From model~\eqref{eq:tay22} if we assume that every TDOA is a Gaussian random variable modeled by
+\begin{equation}
+\tau_{0k}=-\frac{1}{c} \mathbf{u}^{\mathsf{T}}\left(\mathbf{r}_k-\mathbf{r}_0\right)+w_{0k}
+\end{equation}
+and in general from~\eqref{eq:thesystem} we have:
+\begin{equation}
+\boldsymbol{\tau}= \mathbf{Au}+\mathbf{w}=-\frac{1}{c} \mathbf{B} \mathbf{u}+\mathbf{w},
+\end{equation}
+where \(\mathbf{B}\in\mathbb{R}^{(R-1)\times3}\) and \(\mathbf{w}\) is a Gaussian random vector \( \mathbf{w} \sim \mathcal{N}\left(\mathbf{0}, \Sigma_\tau\right)\). The Fisher information matrix with respect to the DOA vector \(\mathbf{u}\) is:
+\begin{equation}
+\boldsymbol{\mathcal{I}}=\frac{1}{c^2}\mathbf{B}^{\mathsf{T}}\Sigma_\tau^{-1}\mathbf{B},
+\end{equation}
+and if we assume independence between the \(R-1\) TDOAs and equal variance \(\sigma_\tau^2\) we get 
+\begin{equation}
+\boldsymbol{\mathcal{I}}^{-1}=\frac{c^2\sigma_{\tau}^2}{\mathbf{B}^{\mathsf{T}}\mathbf{B}}.
+\end{equation}
+Hence the idea of optimizing \(\text{tr}\left(\mathbf{B}^{\mathsf{T}}\mathbf{B}\right)\) to be as large and as isotropic as possible, ideally \(\mathbf{B}^{\mathsf{T}}\mathbf{B}=\alpha \mathbf{I}\). We note that 
+\begin{equation}
+\begin{aligned}
+\mathbf{B}^{\mathsf{T}} \mathbf{B}
+& =\sum_{k = 1}^{R-1}\left(\mathbf{r}_k-\mathbf{r}_0\right)\left(\mathbf{r}_k-\mathbf{r}_0\right)^{\mathsf{T}}\\
+& = \sum_{k = 1}^{R-1} q_k^2 {\mathbf{v}}_k {\mathbf{v}}_k^{\mathsf{T}},
+\end{aligned}
+\end{equation}
+where \({\mathbf{v}}_k=(\mathbf{r}_i-{\mathbf{r}_0}) / \left\|\mathbf{r}_i-{\mathbf{r}_0}\right\|\).If we then constrain the array to a circular region of radius \(\rho\), then the largest trace \(\text{tr}\left(\mathbf{B}^{\mathsf{T}}\mathbf{B}\right)\) is achieved by pushing every sensor to the boundary of the circular region i.e. \(q_i=\rho \;\forall i\) such that 
+\begin{equation}
+ \mathbf{B}^{\mathsf{T}} \mathbf{B}
+ =\rho^2\sum_{k = 1}^{R-1} {\mathbf{v}}_k {\mathbf{v}}_k^{\mathsf{T}}.
+\end{equation}
+If we now impose all the eigenvalues of to be equal, then optimal matrix becomes:
+\begin{equation}
+ \mathbf{B}_{\text{opt}}^{\mathsf{T}} \mathbf{B}_{\text{opt}}
+ =\rho^2 \frac{(R-1)}{\Delta} \mathbf{I}_\Delta,
+\end{equation}
+with \(\Delta\) being the dimension of the space where the array lives, either 2 or 3.
+\noindent
+The unit directions \(\mathbf{v}_k\) need to be isotropic and as detailed in~\cite{yang2005cramer} in a the best sensor configuration is reached by placing the reference sensor \(\mathbf{r}_0\) at the center of the array and then placing the remaining \((R−1)\) sensors uniformly on the circumference. This array form are uniform polygons in 2D and Platonic solids in 3D. We finally note that if the radios of the circle \(\rho=D/2\) with \(D\) being the maximum aperture of the array we have:
+\begin{equation}
+\boldsymbol{\mathcal{I}}^{-1}=\frac{c^2\sigma_{\tau}
+^2}{\mathbf{B}_\text{opt}^{\mathsf{T}}\mathbf{B}_{\text{opt}}}=4 \Delta  \frac{c^2\sigma_{\tau}^2 }{(R-1) D^2}\mathbf{I}_\Delta,
+\end{equation}
+similar to our rough estimations in~\eqref{eq:varD} and~\eqref{eq:varR}:
+\begin{equation}
+\operatorname{Var}(\theta) \approx
+\frac{c^2\sigma_{\tau}^2}{(R-1)D^2}
+\left(\frac{1}{\sin \mu_\theta}\right).
+\end{equation}
+
+\iffalse
+
+\noindent
+Thesis~\cite{Bimodal-sound-source-tracking}
+Book2~\cite{benesty2008microphone}
+Ryan1~\cite{rogalin2017synchronization}
+Ryan2~\cite{rogalin2017synchronizationWITHextra}
+Paper1~\cite{The-Geometry-of-Far-Field-Passive-Source-Localization}
+Book1~\cite{FundamentalsRadarCheney2009}
+Paper2~\cite{algebraic-solution-for-moving-source-location}
+Paper3~\cite{Least-squares-range}
+Paper4~\cite{Discrete-time-techniques}
+
+
+% Requires: \usepackage{graphicx}
+% Geometry-only TDOA with A = 210 km, c = 299,792.458 km/s
+% Worst-case over angle uses max_{theta} |cos(theta) sin^2(theta)| = 2/(3 sqrt(3))
+\begin{table}[ht]
+\centering
+\caption{Geometry-only far-field error for TDOA with $A=210\,\mathrm{km}$.
+Fractional bound $\varepsilon_{\max}=A^2/(8d^2)$; best-angle TDOA error is 0 ns (broadside/endfire);
+worst-angle TDOA error uses $\max_{\theta}|\Delta-\Delta_{\mathrm{PW}}|/c$.}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}l r r r l r@{}}
+\hline
+Target & $d$ (km) & $d/A$ & $\varepsilon_{\max}$ & Angle case & TDOA error (ns) \\
+\hline
+LEO (500 km)    & 500         & 2.38              & $2.21\times 10^{-2}$ & Best  & 0 \\
+LEO (500 km)    & 500         & 2.38              & $2.21\times 10^{-2}$ & Worst & $5.95\times 10^{3}$ \\
+LEO (2000 km)   & 2000        & 9.52              & $1.38\times 10^{-3}$ & Best  & 0 \\
+LEO (2000 km)   & 2000        & 9.52              & $1.38\times 10^{-3}$ & Worst & $3.72\times 10^{2}$ \\
+GEO             & 35{,}786    & 170.41            & $4.30\times 10^{-6}$ & Best  & 0 \\
+GEO             & 35{,}786    & 170.41            & $4.30\times 10^{-6}$ & Worst & $1.16$ \\
+Moon            & 384{,}400   & 1830.48           & $3.73\times 10^{-8}$ & Best  & 0 \\
+Moon            & 384{,}400   & 1830.48           & $3.73\times 10^{-8}$ & Worst & $1.01\times 10^{-2}$ \\
+Psyche ($10^{8}$ km)  & $1.0\times 10^{8}$ & $4.76\times 10^{5}$ & $5.51\times 10^{-13}$ & Best  & 0 \\
+Psyche ($10^{8}$ km)  & $1.0\times 10^{8}$ & $4.76\times 10^{5}$ & $5.51\times 10^{-13}$ & Worst & $1.49\times 10^{-7}$ \\
+Psyche ($6\times 10^{8}$ km) & $6.0\times 10^{8}$ & $2.86\times 10^{6}$ & $1.53\times 10^{-14}$ & Best  & 0 \\
+Psyche ($6\times 10^{8}$ km) & $6.0\times 10^{8}$ & $2.86\times 10^{6}$ & $1.53\times 10^{-14}$ & Worst & $4.13\times 10^{-9}$ \\
+\hline
+\end{tabular}%
+}
+\medskip
+
+\footnotesize
+Notes: Best-angle error is exactly zero for broadside ($\theta=90^\circ$) and endfire ($\theta=0^\circ,180^\circ$) in the ideal two-sensor geometry.
+Worst-angle TDOA error uses $\Delta-\Delta_{\mathrm{PW}}\approx -\frac{A^3}{8d^2}\cos\theta\,\sin^2\theta$,
+maximized at $|\cos\theta|=1/\sqrt{3}$, giving a factor $2/(3\sqrt{3})$ in the absolute maximum.
+\end{table}
+
+% in preamble:
+% \usepackage{graphicx}
+
+\begin{table}[ht]
+\centering
+\caption{Geometry-only far-field check for TDOA with aperture $A=210\,\mathrm{km}$. Worst-case fractional curvature error bound $\varepsilon_{\max}=\tfrac{A^2}{8d^2}$.}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l r r r r c c}
+\hline
+Target & $d$ (km) & $d/A$ & $\varepsilon_{\max}$ & ppm & $\le 1\,\%$? & $\le 0.1\,\%$? \\
+\hline
+LEO (range) & $500$–$2000$ & $2.38$–$9.52$ & $2.21\times 10^{-2}$–$1.38\times 10^{-3}$ & $2.21\times 10^{4}$–$1.38\times 10^{3}$ & mixed & no \\
+GEO & $35{,}786$ & $170.4$ & $4.30\times 10^{-6}$ & $4.30$ & yes & yes \\
+Moon & $384{,}400$ & $1830$ & $3.73\times 10^{-8}$ & $0.037$ & yes & yes \\
+Psyche (range) & $(1$–$6)\times 10^{8}$ & $(4.76\times 10^{5}$–$2.86\times 10^{6})$ & $(5.51\times 10^{-13}$–$1.53\times 10^{-14})$ & $(5.51\times 10^{-7}$–$1.53\times 10^{-8})$ & yes & yes \\
+\hline
+\end{tabular}%
+}
+\medskip
+
+\small
+Notes: The bound $\varepsilon_{\max}=A^2/(8d^2)$ is the worst case over arrival angle. “Mixed” for LEO means low LEO ($\sim$500 km) exceeds the 1\,\% bound, while $\gtrsim$1000 km is within 1\,\% but not 0.1\,\%. Values scale as $1/d^2$.
+\end{table}
+
+\fi

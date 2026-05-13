@@ -1,0 +1,89 @@
+\chapter{Cross Correlation Methods}
+\label{ch:crosscorrere}
+
+\section{Basic Cross Correlation}
+Suppose like in the previous chapters that there is a single far-field source, that we implement an array of \(R\) receivers and that each antenna receives only the direct path signal. All cross-correlation methods that assume the channel to be non-reverberant and frequency flat~\cite{benesty2008microphone,Bimodal-sound-source-tracking,Falk2004}, first choose a reference sensor (in our case denoted by sensor number \(0\)) and then describe the signal \textbf{received} at sensor \(r\in\{0,\ldots,R-1\}\) at the discrete interval time \(k\) as follows:
+\begin{equation}
+\begin{aligned}
+f_r[k]
+& = a_{r} s\left[k-\Delta_r\right]+v_{r}[k]\\
+& = a_{r} s\left[k-\Delta_0-l_{0r}\right]+v_{r}[k],
+\end{aligned}
+\label{eq:thecross}
+\end{equation}
+\begin{equation}
+\begin{aligned}
+f_r[k]
+& = \lambda_{r} \, s\left[k-\Delta_r\right]+b_{r}[k]\\
+& = \lambda_{r} \, s\left[k-\Delta_0-l_{0r}\right]+b_{r}[k],
+\end{aligned}
+\end{equation}
+where \(l_{0r}\) is the \textbf{discrete} TDOA between the reference and sensor \(r\) (with \(l_{00}=0\)), \(\Delta_r=\Delta_0+l_{0r}\) is the \textbf{discrete} total time delay, \(a_{r}\) is the attenuation or gain factor, the transmitted signal \(k \mapsto s[k]\) is assumed to be a discrete wide sense stationary (WSS) stochastic process and \(k\mapsto v_{r}[k]\) is assumed to be a zero-mean Gaussian stochastic process, which is uncorrelated both with the signal \(k \mapsto s[k]\) and with the noise associated to the other sensors.
+
+\noindent
+Following the convention used in~\cite{wiki:Cross-correlation}, for real valued discrete WSS stochastic processes, the cross-correlation function between signal \(k\mapsto f_0[k]\) and signal \(k\mapsto f_r[k]\) is defined as:
+\begin{equation}
+\mathrm{R}_{f_0f_r}[q]=\mean{f_0[k]f_r[k+q]}
+\label{eq:thedef}
+\end{equation}
+Plugging~\eqref{eq:thecross} into definition~\eqref{eq:thedef} we get:
+\begin{equation}
+\begin{aligned}
+\mean{f_0[k]f_r[k+q]}
+& =
+\mean{(a_{0} s\left[k-\Delta_0\right]+v_{0}[k])(a_{r} s\left[k-\Delta_0-l_{0r}+q\right]+v_{r}[k+q])}\\
+& \overset{(a)}{=}
+a_{0}a_{r}\mean{s\left[k-\Delta_0\right]s\left[k-\Delta_0-l_{0r}+q\right]}\\
+& = a_{0}a_{r}\mathrm{R}_{ss}[q-l_{0r}]
+\end{aligned}
+\end{equation}
+where in step (a) we used the fact that the noise is uncorrelated and zero mean. By the Cauchy–Schwarz inequality, for any WSS process we have \(|\mathrm{R}_{ss}[k]|\leq \mathrm{R}_{ss}[0]\,\forall k\in\mathbb{Z}\), therefore we get the result:
+\begin{equation}
+\underset{q}{\argmax} \mathrm{R}_{f_0f_r}[q]
+=\underset{q}{\argmax}a_{0}a_{r}\mathrm{R}_{ss}[q-l_{0r}]
+=l_{0r}.
+\label{eq:basedon}
+\end{equation}
+
+\noindent
+However, in real-world implementations, the cross-correlation function is not known and must be estimated. The most common low-variance and asymptotically unbiased time-averaged estimate of the cross-correlation function used in literature~\cite{benesty2008microphone} is:
+\begin{equation}
+\hat{\mathrm{R}}_{f_0f_r}[q]=\frac{1}{N} \sum_{n=0}^{N-p-1} f_0[k]f_r[k+q],
+\label{eq:thegabibbo}
+\end{equation}
+where \(N\) is the number of observations considered from each received signal. In theory, the estimate in~\eqref{eq:thegabibbo} is defined for all \(q\in\mathbb{Z}\), in practice, \(q\) is restricted by prior knowledge of the delay range~\cite{Discrete-time-techniques}. Based on~\eqref{eq:basedon}, we define an estimator of the TDOA that finds the argument that maximizes the amplitude of the \textbf{estimated} cross correlation function between the received signals:
+\begin{equation}
+l_{r\text{CC}}=\underset{q}{\argmax} \hat{\mathrm{R}}_{f_0f_r}[q].
+\label{eq:yousolve}
+\end{equation}
+After having obtained the observations from the two sensors, estimated the cross correlation functions and solved~\eqref{eq:yousolve}, a common practice to achieve a subsample precision, is to fit a convex second degree polynomial to the points \(\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}]\), \(\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}-1]\) and \(\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}+1]\) and then take as the new refined estimate the vertex of the resulting parabola. This is done because the cross-correlation function is symmetric around its peak and a convex parabola is a simple approximation of such a peak. In practice, a general parabola can be described by \(g(x)=Ax^2+Bx+C\) and we fit the three point as follows:
+\begin{align}
+\begin{cases}
+g(-1) & =A-B+C=\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}-1], \\
+g(0) & = C =\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}], \\
+g(+1) & =A+B+C=\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}+1].
+\end{cases}
+\label{eq:thecases}
+\end{align}
+The vertex of a parabola is \(x=-B/(2A)\) and therefore by combining equations~\eqref{eq:thecases} the new estimate is at
+\begin{equation}
+\hat{l}_{r\text{CC}}={l}_{r\text{CC}}+\frac{\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}-1]-\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}+1]}{2\left(\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}-1]-2 \hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}]+\hat{\mathrm{R}}_{f_0f_r}[l_{r\text{CC}}+1]\right)}.
+\end{equation}
+
+\section{Sliding Window Method}\label{sec:sliding}
+MLE with known s.
+
+
+\section{The Generalized Cross-Correlation}
+
+Generalized cross-correction (GCC) functions accentuate the peak of the cross-correlation associated to the delay through the use of a weighting function.
+
+The generalized cross-correlation (GCC) algorithm proposed by Knapp and
+Carter [145] is the most widely used approach to TDOA estimation. Same as
+the CC method, GCC employs the free-field model (9.5) and considers only
+two microphones.
+
+The GCC methods have been well studied and
+are found to perform fairly well in moderately noisy and non-reverberant environments.
+
+\section{Cross Correlation under Poisson Statistics}\label{sec:Poissonstats}

@@ -1,0 +1,17 @@
+\begin{tikzpicture}[
+  line cap=round, line join=round, >=Stealth, thick,
+  every node/.style={font=\normalsize},   % nodes match document font size
+  every label/.style={font=\normalsize}   % labels match document font size
+]
+  %--- nodes
+  \tikzset{dot/.style={circle,fill,inner sep=3pt}}
+  \node[dot, label=below left:$i$] (i) at (0,0) {};
+  \node[dot, label=above:$j$]      (j) at (1.1,1.2) {};
+  \node[dot, label=below right:$k$](k) at (1.7,0) {};
+
+  %--- curved arrows with labels
+  \draw[->] (i) to[bend left=50]  node[left]  {$\tau_{ij}$} (j);
+  \draw[->] (j) to[bend left=50]  node[right] {$\tau_{jk}$} (k);
+  \draw[->] (k) to[bend left=50] node[below] {$\tau_{ki}$} (i);
+
+\end{tikzpicture}
