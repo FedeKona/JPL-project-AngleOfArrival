@@ -8,6 +8,7 @@ octave-workspace
 .DS_Store
 .AppleDouble
 .LSOverride
+Thumbs.db
 
 # LaTeX (for when you add your Overleaf files)
 *.aux
