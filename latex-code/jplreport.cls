@@ -11,7 +11,6 @@
 \RequirePackage[english]{babel}
 
 \RequirePackage{tikz}
-\RequirePackage{tikz-3dplot}
 \usetikzlibrary{arrows.meta}
 
 \RequirePackage{xparse}
@@ -35,6 +34,7 @@
   pdfauthor={Federico Ajmone Marsan},
   pdftitle={Final Internship Report}
 }
+
 \RequirePackage{graphicx}
 
 \RequirePackage{float}
@@ -42,7 +42,6 @@
 
 \RequirePackage{pgfplots}
 \RequirePackage{cite}
-\RequirePackage{tikz}
 \RequirePackage{tikz-3dplot} 
 \usetikzlibrary{positioning}
 \usetikzlibrary{fit}
@@ -51,16 +50,14 @@
 
 \RequirePackage{bm}
 \RequirePackage{array}
-\RequirePackage[table]{xcolor}
+\RequirePackage[table,dvipsnames]{xcolor}
 
 \RequirePackage[bottom]{footmisc}
-\RequirePackage{hyperref} 
 
 \RequirePackage[most]{tcolorbox}
 \RequirePackage{empheq}
 
 \RequirePackage{mismath}
-\RequirePackage[dvipsnames]{xcolor}
 
 \RequirePackage{caption}
 \RequirePackage{subcaption}
@@ -97,15 +94,6 @@
 \titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}  
 \titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
 \titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
-
-% Hyperref settings
-\hypersetup{
-  colorlinks=true,
-  linkcolor=black,
-  urlcolor=black,
-  pdftitle={JPL Report},
-  pdfauthor={Federico Ajmone Marsan},
-}
 
 \renewcommand{\maketitle}{
   \begin{center}
