@@ -1,0 +1,72 @@
+\documentclass[tikz,border=6pt]{standalone}
+\usetikzlibrary{calc}
+
+% ------------------------------------------------------------
+% Packing macro:
+%  - For N<=3: ring of N equal circles (no center).
+%  - For N>=4: 1 center + (N-1) rim circles, all equal radius.
+%    * If k=N-1 < 6 (i.e., N=4,5,6), set r=R/3 so center=rim and are tangent;
+%      ring neighbors do not touch each other.
+%    * If k>=6, use tight ring so neighbors and the container are tangent:
+%        r = R * sin(pi/k) / (1 + sin(pi/k)),   d = R - r.
+% ------------------------------------------------------------
+\newcommand{\PackingPlot}[2][3]{%
+  \begingroup
+  \def\R{#1}%
+  \pgfmathtruncatemacro{\N}{#2}%
+  \pgfmathtruncatemacro{\kraw}{(\N>3 ? \N-1 : \N)}%
+
+  % decide geometry
+  \ifnum\N>3
+    \pgfmathtruncatemacro{\k}{\kraw}
+    \ifnum\k<6 % N=4,5,6
+      \pgfmathsetmacro{\r}{\R/3}
+      \pgfmathsetmacro{\d}{2*\R/3}
+    \else % N>=7
+      \pgfmathsetmacro{\s}{sin(180/\k)}%
+      \pgfmathsetmacro{\r}{\R * \s/(1+\s)}%
+      \pgfmathsetmacro{\d}{\R - \r}%
+    \fi
+  \else % N=3
+    \pgfmathtruncatemacro{\k}{\kraw}
+    \pgfmathsetmacro{\s}{sin(180/\k)}%
+    \pgfmathsetmacro{\r}{\R * \s/(1+\s)}%
+    \pgfmathsetmacro{\d}{\R - \r}%
+  \fi
+
+  \begin{scope}
+    % container circle
+    \draw[gray!60, line width=0.6pt] (0,0) circle (\R);
+
+    % center circle for N>=4, equal radius to rim
+    \ifnum\N>3
+      \fill[magenta!60] (0,0) circle (\r);
+      \draw[magenta!80!black, line width=0.5pt] (0,0) circle (\r);
+    \fi
+
+    % ring of k circles
+    \foreach \i in {0,...,\numexpr\k-1\relax} {
+      \pgfmathsetmacro{\ang}{360*\i/\k}
+      \path (\ang:\d) coordinate (C\i);
+      \fill[orange!70] (C\i) circle (\r);
+      \draw[orange!80!black, line width=0.5pt] (C\i) circle (\r);
+    }
+
+    % bigger bold label
+    \node[font=\sffamily\bfseries\LARGE] at (0,\R+0.7) {$N=\N$};
+  \end{scope}
+  \endgroup
+}
+
+\begin{document}
+\begin{tikzpicture}
+  % 3x3 grid, outer radius = 3cm for each panel
+  \foreach \N [count=\idx from 0] in {3,4,5,6,7,8,9,10,11} {
+    \pgfmathtruncatemacro{\col}{mod(\idx,3)}
+    \pgfmathtruncatemacro{\row}{int(\idx/3)}
+    \begin{scope}[xshift={7.2cm*\col}, yshift={-7.2cm*\row}]
+      \PackingPlot[3]{\N}
+    \end{scope}
+  }
+\end{tikzpicture}
+\end{document}
