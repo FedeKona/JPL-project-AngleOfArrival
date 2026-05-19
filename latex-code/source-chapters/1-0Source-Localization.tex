@@ -4,19 +4,6 @@
 
 In the context of array signal processing, the source localization problem consists of estimating the position of an emitting source, using an array of passive receivers, sometimes also called elements or sensors~\cite{benesty2008microphone}. The position of the source can be represented in Cartesian coordinates \(\mathbf{p}=[p_x,p_y,p_z]^\mathsf{T}\) or spherical coordinates \(\mathbf{p}_{\text{sph}}=[\rho,\phi,\theta]^\mathsf{T}\) as shown in~\Cref{fig:coordinatex}.
 
-\iffalse
-\begin{figure}[!t]
-\centering
-\includegraphics[
-  width=0.4\textwidth,
-  keepaspectratio,
-  clip,
-]{figs/coordinates.pdf}
-\caption[]{Spherical coordinate system with \(\phi\) being the azimuth angle and \(\theta\) being the polar (or bearing) angle defined as in~\cite{van2002optimum}.}
-\label{fig:coordinatess}
-\end{figure}
-\fi
-
 \begin{figure}[!b]
 \centering
 \resizebox{0.4\linewidth}{!}{\input{figs/coordinates.tex}}
@@ -197,14 +184,11 @@ Given these results, we compute in~\Cref{tbl:errortable} the errors made when as
 
 \begin{figure}[tbh]
 \centering
-\includegraphics[
-  width=0.55\textwidth,
-  keepaspectratio,
-  clip,
-]{figs/antennas.jpg}
+\resizebox{0.55\linewidth}{!}{\input{figs/antennas.tex}}
 \caption[]{The three ground stations used for receiving the DSOC signal and the distances between them.~\cite{DSOC}}
 \label{fig:antennasholder}
 \end{figure}
+
 
 \begin{table}[ht]
 \centering
