@@ -19,6 +19,7 @@
 \RequirePackage{setspace}
 \RequirePackage{siunitx}
 \RequirePackage{booktabs}
+\RequirePackage{graphicx}
 
 \RequirePackage{fontspec}
 
@@ -34,8 +35,6 @@
   pdfauthor={Federico Ajmone Marsan},
   pdftitle={Final Internship Report}
 }
-
-\RequirePackage{graphicx}
 
 \RequirePackage{float}
 \RequirePackage{cleveref}
